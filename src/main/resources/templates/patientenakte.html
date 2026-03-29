@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Patientenakte</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .text-truncate-cell {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        .text-truncate-cell:hover {
+            white-space: normal;
+            overflow: visible;
+            background-color: #fffbea;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: body}"></div>
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Patientenakte: <span th:text="${patient.name}"></span></h2>
+        <div>
+            <a th:href="@{/patients/{id}(id=${patient.id})}" class="btn btn-secondary">Zurueck zur Uebersicht</a>
+        </div>
+    </div>
+
+    <!-- Основная информация -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center bg-light">
+                <div class="card-body">
+                    <h6>Geburtsdatum</h6>
+                    <p th:text="${patient.geburtsdatum}"></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center bg-light">
+                <div class="card-body">
+                    <h6>Telefon</h6>
+                    <p th:text="${patient.telefon}"></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center bg-light">
+                <div class="card-body">
+                    <h6>Termine gesamt</h6>
+                    <p th:text="${#lists.size(termine)}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Anamnese форма -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Anamnese & Allgemeine Informationen</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/patients/{id}/akte(id=${patient.id})}"
+                  th:object="${akte}" method="post">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Anamnese</strong></label>
+                        <textarea th:field="*{anamnese}" class="form-control" rows="3"
+                                  placeholder="Beschreibung der Krankengeschichte..."></textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Allergien</strong></label>
+                        <textarea th:field="*{allergien}" class="form-control" rows="3"
+                                  placeholder="Bekannte Allergien..."></textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Chronische Krankheiten</strong></label>
+                        <textarea th:field="*{chronischeKrankheiten}" class="form-control" rows="3"
+                                  placeholder="Chronische Erkrankungen..."></textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Medikamente</strong></label>
+                        <textarea th:field="*{medikamente}" class="form-control" rows="3"
+                                  placeholder="Aktuelle Medikation..."></textarea>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label"><strong>Notizen</strong></label>
+                        <textarea th:field="*{notizen}" class="form-control" rows="2"
+                                  placeholder="Allgemeine Notizen..."></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success">Speichern</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Diagnosen -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Diagnosen & Behandlungsplaene</h5>
+            <a th:href="@{/patients/{id}/diagnose/new(id=${patient.id})}"
+               class="btn btn-dark btn-sm">+ Neue Diagnose</a>
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(diagnosen)}" class="text-muted">
+                Noch keine Diagnosen vorhanden.
+            </div>
+            <table th:if="${!#lists.isEmpty(diagnosen)}" class="table table-striped">
+                <thead>
+                <tr>
+                    <th style="width:100px">Datum</th>
+                    <th style="width:120px">Diagnose</th>
+                    <th style="width:120px">Arzt</th>
+                    <th>Beschreibung</th>
+                    <th>Behandlungsplan</th>
+                    <th style="width:130px">Aktionen</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="d : ${diagnosen}">
+                    <td th:text="${d.datum}"></td>
+                    <td><strong th:text="${d.diagnose}"></strong></td>
+                    <td th:text="${d.arzt != null ? d.arzt.name : '-'}"></td>
+                    <td class="text-truncate-cell" th:text="${d.beschreibung}" title="Klicken zum Lesen"></td>
+                    <td class="text-truncate-cell" th:text="${d.behandlungsplan}" title="Klicken zum Lesen"></td>
+                    <td>
+                        <a th:href="@{/patients/{pid}/diagnose/edit/{did}(pid=${patient.id}, did=${d.id})}"
+                           class="btn btn-primary btn-sm">Bearbeiten</a>
+                        <a th:href="@{/patients/{pid}/diagnose/delete/{did}(pid=${patient.id}, did=${d.id})}"
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Diagnose loeschen?')">Loeschen</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <small class="text-muted">Tipp: Hover ueber langen Text um ihn vollstaendig zu lesen.</small>
+        </div>
+    </div>
+
+    <!-- История терминов -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Terminhistorie</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(termine)}" class="text-muted">Keine Termine vorhanden.</div>
+            <table th:if="${!#lists.isEmpty(termine)}" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Uhrzeit</th>
+                    <th>Arzt</th>
+                    <th>Fachrichtung</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="termin : ${termine}">
+                    <td th:text="${termin.datum}"></td>
+                    <td th:text="${termin.uhrzeit}"></td>
+                    <td th:text="${termin.arzt.name}"></td>
+                    <td th:text="${termin.arzt.fachrichtung}"></td>
+                    <td>
+                        <span th:if="${termin.status.name() == 'GEPLANT'}"    class="badge bg-warning text-dark">Geplant</span>
+                        <span th:if="${termin.status.name() == 'BESTAETIGT'}" class="badge bg-success">Bestaetigt</span>
+                        <span th:if="${termin.status.name() == 'ABGESAGT'}"   class="badge bg-danger">Abgesagt</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Kalender</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .kalender-table th { text-align: center; min-width: 150px; }
+        .kalender-table td { vertical-align: top; min-width: 150px; height: 50px; padding: 4px; }
+        .zeitslot-col { font-size: 0.75rem; color: #888; width: 60px; }
+        .termin-card {
+            font-size: 0.78rem;
+            border-radius: 6px;
+            padding: 4px 6px;
+            margin-bottom: 2px;
+        }
+        .termin-geplant    { background-color: #ffc107; color: #000; }
+        .termin-bestaetigt { background-color: #198754; color: #fff; }
+        .termin-abgesagt   { background-color: #dc3545; color: #fff; }
+        .heute-spalte { background-color: #f0f8ff; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: body}"></div>
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a th:href="@{/kalender(datum=${vorwoche})}" class="btn btn-outline-secondary">&larr; Vorwoche</a>
+        <h4 class="mb-0">
+            Woche: <span th:text="${montag}"></span> &ndash; <span th:text="${freitag}"></span>
+        </h4>
+        <a th:href="@{/kalender(datum=${nachwoche})}" class="btn btn-outline-secondary">Nachwoche &rarr;</a>
+    </div>
+
+    <div class="d-flex justify-content-center mb-3 gap-2">
+        <a th:href="@{/kalender}" class="btn btn-primary btn-sm">Aktuelle Woche</a>
+        <a th:href="@{/termine/new}" class="btn btn-success btn-sm">+ Neuer Termin</a>
+    </div>
+
+    <div class="d-flex gap-3 mb-3 justify-content-center">
+        <span class="badge bg-warning text-dark">Geplant</span>
+        <span class="badge bg-success">Bestaetigt</span>
+        <span class="badge bg-danger">Abgesagt</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered kalender-table">
+            <thead class="table-dark">
+            <tr>
+                <th class="zeitslot-col">Zeit</th>
+                <th th:each="tag : ${wochentage}"
+                    th:classappend="${tag == heute} ? 'table-primary' : ''"
+                    th:text="${#temporals.format(tag, 'EEE dd.MM')}">
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="slot : ${zeitslots}">
+                <td class="zeitslot-col text-muted" th:text="${#temporals.format(slot, 'HH:mm')}"></td>
+                <td th:each="tag : ${wochentage}"
+                    th:classappend="${tag == heute} ? 'heute-spalte' : ''">
+                    <th:block th:each="termin : ${kalenderMap.get(#strings.toString(tag) + '_' + #strings.toString(slot))}">
+                        <div th:if="${termin.status.name() == 'GEPLANT'}"    class="termin-card termin-geplant">
+                            <strong th:text="${termin.uhrzeit}"></strong><br/>
+                            <span th:text="${termin.patient.name}"></span><br/>
+                            <small th:text="${termin.arzt.name}"></small>
+                        </div>
+                        <div th:if="${termin.status.name() == 'BESTAETIGT'}" class="termin-card termin-bestaetigt">
+                            <strong th:text="${termin.uhrzeit}"></strong><br/>
+                            <span th:text="${termin.patient.name}"></span><br/>
+                            <small th:text="${termin.arzt.name}"></small>
+                        </div>
+                        <div th:if="${termin.status.name() == 'ABGESAGT'}"   class="termin-card termin-abgesagt">
+                            <strong th:text="${termin.uhrzeit}"></strong><br/>
+                            <span th:text="${termin.patient.name}"></span><br/>
+                            <small th:text="${termin.arzt.name}"></small>
+                        </div>
+                    </th:block>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Rezept Formular</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: body}"></div>
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0" th:text="${rezept.id} != null ? 'Rezept bearbeiten' : 'Neues Rezept ausstellen'"></h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/rezepte}" method="post">
+                <input type="hidden" name="rezeptId" th:value="${rezept.id}"/>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Patient</label>
+                        <select name="patientId" class="form-control" required>
+                            <option value="">-- Bitte auswaehlen --</option>
+                            <option th:each="p : ${patients}"
+                                    th:value="${p.id}"
+                                    th:text="${p.name}"
+                                    th:selected="${rezept.patient != null and rezept.patient.id == p.id}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Arzt</label>
+                        <select name="arztId" class="form-control" required>
+                            <option value="">-- Bitte auswaehlen --</option>
+                            <option th:each="a : ${aerzte}"
+                                    th:value="${a.id}"
+                                    th:text="${a.name}"
+                                    th:selected="${rezept.arzt != null and rezept.arzt.id == a.id}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Medikament</label>
+                        <input type="text" name="medikament" class="form-control"
+                               th:value="${rezept.medikament}"
+                               placeholder="z.B. Ibuprofen 400mg" required/>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Dosierung</label>
+                        <input type="text" name="dosierung" class="form-control"
+                               th:value="${rezept.dosierung}"
+                               placeholder="z.B. 3x taeglich 1 Tablette"/>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Einnahmehinweis</label>
+                        <textarea name="einnahmehinweis" class="form-control" rows="2"
+                                  th:text="${rezept.einnahmehinweis}"
+                                  placeholder="z.B. Nach dem Essen einnehmen, nicht mit Alkohol..."></textarea>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Ausstellungsdatum</label>
+                        <input type="date" name="ausstellungsdatum" class="form-control"
+                               th:value="${rezept.ausstellungsdatum}" required/>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Gueltig bis</label>
+                        <input type="date" name="gueltigBis" class="form-control"
+                               th:value="${rezept.gueltigBis}" required/>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-control">
+                            <option value="AUSGESTELLT" th:selected="${rezept.status == null or rezept.status.name() == 'AUSGESTELLT'}">Ausgestellt</option>
+                            <option value="EINGELOEST"  th:selected="${rezept.status != null and rezept.status.name() == 'EINGELOEST'}">Eingeloest</option>
+                            <option value="ABGELAUFEN"  th:selected="${rezept.status != null and rezept.status.name() == 'ABGELAUFEN'}">Abgelaufen</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Termin (optional)</label>
+                        <select name="terminId" class="form-control">
+                            <option value="">-- Kein Termin --</option>
+                            <option th:each="t : ${termine}"
+                                    th:value="${t.id}"
+                                    th:text="${t.datum + ' - ' + t.patient.name + ' - ' + t.arzt.name}"
+                                    th:selected="${rezept.termin != null and rezept.termin.id == t.id}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    <button type="submit" class="btn btn-success">Speichern</button>
+                    <a th:href="@{/rezepte}" class="btn btn-secondary ms-2">Zurueck</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: body}"></div>
+
+<div class="container mt-5">
+
+    <!-- Информация о пациенте -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-white">Patient: <span th:text="${patient.name}"></span></h5>
+            <div>
+                <a th:href="@{/patients/{id}/akte(id=${patient.id})}" class="btn btn-warning btn-sm">Patientenakte</a>
+                <a th:href="@{/patients/edit/{id}(id=${patient.id})}" class="btn btn-light btn-sm">Bearbeiten</a>
+                <a th:href="@{/patients}" class="btn btn-outline-light btn-sm">Zurück</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <p><strong>Name:</strong> <span th:text="${patient.name}"></span></p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Geburtsdatum:</strong> <span th:text="${patient.geburtsdatum}"></span></p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Telefon:</strong> <span th:text="${patient.telefon}"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- История терминов -->
+    <h4 class="mb-3">Terminhistorie</h4>
+
+    <div th:if="${#lists.isEmpty(termine)}" class="alert alert-info">
+        Keine Termine vorhanden.
+    </div>
+
+    <table th:if="${!#lists.isEmpty(termine)}" class="table table-striped table-bordered">
+        <thead class="table-dark">
+        <tr>
+            <th>Datum</th>
+            <th>Uhrzeit</th>
+            <th>Arzt</th>
+            <th>Fachrichtung</th>
+            <th>Status</th>
+            <th>Aktionen</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="termin : ${termine}">
+            <td th:text="${termin.datum}"></td>
+            <td th:text="${termin.uhrzeit}"></td>
+            <td th:text="${termin.arzt.name}"></td>
+            <td th:text="${termin.arzt.fachrichtung}"></td>
+            <td>
+                <span th:if="${termin.status.name() == 'GEPLANT'}"    class="badge bg-warning text-dark">Geplant</span>
+                <span th:if="${termin.status.name() == 'BESTAETIGT'}" class="badge bg-success">Bestätigt</span>
+                <span th:if="${termin.status.name() == 'ABGESAGT'}"   class="badge bg-danger">Abgesagt</span>
+            </td>
+            <td>
+                <a th:href="@{/termine/edit/{id}(id=${termin.id})}" class="btn btn-primary btn-sm">Bearbeiten</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Кнопка создать новый термин для этого пациента -->
+    <a th:href="@{/termine/new}" class="btn btn-success mt-2">+ Neuen Termin</a>
+
+</div>
+
+</body>
+</html>

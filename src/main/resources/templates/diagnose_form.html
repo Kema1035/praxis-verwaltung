@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnose</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: body}"></div>
+
+<div class="container mt-5">
+    <h2 th:text="${diagnose.id} != null ? 'Diagnose bearbeiten' : 'Neue Diagnose'"></h2>
+    <p class="text-muted">Patient: <strong th:text="${patient.name}"></strong></p>
+
+    <form th:action="@{/patients/{id}/diagnose(id=${patient.id})}" method="post">
+
+        <!-- Скрытые поля -->
+        <input type="hidden" name="diagnoseId" th:value="${diagnose.id}"/>
+
+        <div class="mb-3">
+            <label class="form-label">Datum</label>
+            <input type="date" name="datum" class="form-control"
+                   th:value="${diagnose.datum}" required/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Diagnose</label>
+            <input type="text" name="diagnoseText" class="form-control"
+                   th:value="${diagnose.diagnose}"
+                   placeholder="z.B. Hypertonie, Diabetes Typ 2..." required/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Arzt</label>
+            <select class="form-control" name="arztId">
+                <option value="">-- Bitte auswaehlen --</option>
+                <option th:each="a : ${aerzte}"
+                        th:value="${a.id}"
+                        th:text="${a.name}"
+                        th:selected="${diagnose.arzt != null and diagnose.arzt.id == a.id}">
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Termin (optional)</label>
+            <select class="form-control" name="terminId">
+                <option value="">-- Kein Termin --</option>
+                <option th:each="t : ${termine}"
+                        th:value="${t.id}"
+                        th:text="${t.datum + ' ' + t.uhrzeit + ' - ' + t.arzt.name}"
+                        th:selected="${diagnose.termin != null and diagnose.termin.id == t.id}">
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Beschreibung</label>
+            <textarea name="beschreibung" class="form-control" rows="3"
+                      th:text="${diagnose.beschreibung}"
+                      placeholder="Detaillierte Beschreibung der Diagnose..."></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Behandlungsplan</label>
+            <textarea name="behandlungsplan" class="form-control" rows="3"
+                      th:text="${diagnose.behandlungsplan}"
+                      placeholder="Geplante Behandlung, Medikamente, Empfehlungen..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Speichern</button>
+        <a th:href="@{/patients/{id}/akte(id=${patient.id})}" class="btn btn-secondary">Abbrechen</a>
+    </form>
+</div>
+
+</body>
+</html>

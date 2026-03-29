@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Patienten</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: body}"></div>
+
+<div class="container mt-5">
+    <h1>Patienten</h1>
+
+    <form th:action="@{/patients/search}" method="get" class="mb-3 d-flex gap-2">
+        <input type="text" name="keyword" class="form-control"
+               placeholder="Name suchen..." list="patientSuggestions" autocomplete="off"/>
+        <datalist id="patientSuggestions">
+            <option th:each="p : ${patients}" th:value="${p.name}"></option>
+        </datalist>
+        <button type="submit" class="btn btn-primary">Suchen</button>
+        <a th:href="@{/patients}" class="btn btn-secondary">Alle anzeigen</a>
+    </form>
+
+    <a href="/patients/new" class="btn btn-success mb-3">Neuen Patienten hinzufuegen</a>
+
+    <table class="table table-striped">
+        <thead class="table-dark">
+        <tr>
+            <th>Name</th>
+            <th>Geburtsdatum</th>
+            <th>Telefon</th>
+            <th>Versicherung</th>
+            <th>Aktionen</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="patient : ${patients}">
+            <td th:text="${patient.name}"></td>
+            <td th:text="${patient.geburtsdatum}"></td>
+            <td th:text="${patient.telefon}"></td>
+            <td>
+                <span th:if="${patient.versicherung != null}">
+                    <span th:if="${patient.versicherung.name() == 'GESETZLICH'}"   class="badge bg-primary">GKV</span>
+                    <span th:if="${patient.versicherung.name() == 'PRIVAT'}"       class="badge bg-success">PKV</span>
+                    <span th:if="${patient.versicherung.name() == 'BEIHILFE'}"     class="badge bg-info">Beihilfe</span>
+                    <span th:if="${patient.versicherung.name() == 'SELBSTZAHLER'}" class="badge bg-warning text-dark">Selbstzahler</span>
+                </span>
+            </td>
+            <td>
+                <a th:href="@{/patients/{id}(id=${patient.id})}" class="btn btn-info btn-sm">Details</a>
+                <a th:href="@{/patients/edit/{id}(id=${patient.id})}" class="btn btn-primary btn-sm">Bearbeiten</a>
+                <button sec:authorize="hasRole('ADMIN')"
+                        type="button" class="btn btn-danger btn-sm"
+                        th:data-name="${patient.name}"
+                        th:data-url="@{/patients/delete/{id}(id=${patient.id})}"
+                        onclick="showDeleteModal(this)">Loeschen</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Модальное окно удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Bestaetigung</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Moechten Sie den Patienten <strong id="deleteName"></strong> wirklich loeschen?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <a id="deleteConfirmBtn" href="#" class="btn btn-danger">Loeschen</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function showDeleteModal(btn) {
+        document.getElementById('deleteName').textContent = btn.getAttribute('data-name');
+        document.getElementById('deleteConfirmBtn').href = btn.getAttribute('data-url');
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+</body>
+</html>
